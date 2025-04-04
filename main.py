@@ -4,6 +4,7 @@ import requests
 
 
 apikey = open("./api.txt", "r")
+
 class CheckedIpAbuse:
     def __init__(self, ip, whiteliststatus, abuseconfidence, country, usagetype, isp, domain, istor, totalreports, lastreportdate):
         self.ip = ip
@@ -33,13 +34,23 @@ def processCSV():
 
 def processIPsAbuseDB(iparr, apikey):
     resultsabuseip = []
-    for ip in iparr:
-        resultsabuseip.append(makeRequestAbuse(ip, apikey))
+    for i in range(len(iparr)):
+        ip = iparr[i]
+        jsondoc = makeRequestAbuse(ip, apikey)
+        runningip = jsondoc['data']['ipAddress']
+        runningwhitelist = jsondoc['data']['isWhitelisted']
+        runningabuseconfidence = jsondoc['data']['abuseConfidenceScore']
+        runningcountry = jsondoc['data']['countryCode']
+        runningusagetype = jsondoc['data']['usageType']
+        runningisp = jsondoc['data']['isp']
+        runningdomain = jsondoc['data']['domain']
+        runningistor = jsondoc['data']['isTor']
+        runningtotalreports = jsondoc['data']['totalReports']
+        runninglastreport = jsondoc['data']['lastReportedAt']
+        resultsabuseip.append(CheckedIpAbuse(runningip, runningwhitelist, runningabuseconfidence, runningcountry, runningusagetype, runningisp, runningdomain, runningistor, runningtotalreports, runninglastreport))
+    print(resultsabuseip)
 
-    #Formatted output
-
-    decodedresponse = json.loads(response.text)
-    print(json.dumps(decodedresponse, sort_keys=True, indent=4))
+#    print(json.dumps(decodedresponse, sort_keys=True, indent=4))
 
 def makeRequestAbuse(ipadd, apikey):
     url = "https://api.abuseipdb.com/api/v2/check"
@@ -52,7 +63,9 @@ def makeRequestAbuse(ipadd, apikey):
         'Key': apikey
     }
     response = requests.request(method='GET', url=url, headers=headers, params=querystring)
-    return response
+    decodedresponse = json.loads(response.text)
+    return decodedresponse
 
 if __name__ == '__main__':
-    processIPsAbuseDB(processCSV(), "2238667a2965c83853805f1e8785afe0ae4dec3bc946f9efcb04e32dce917c7add0fb54207b896d4")
+    processIPsAbuseDB(processCSV(), apikey.read())
+    apikey.close()
