@@ -4,7 +4,19 @@ import requests
 
 
 apikey = open("./api.txt", "r")
-print(apikey.read())
+class CheckedIpAbuse:
+    def __init__(self, ip, whiteliststatus, abuseconfidence, country, usagetype, isp, domain, istor, totalreports, lastreportdate):
+        self.ip = ip
+        self.whiteliststatus = whiteliststatus
+        self.abuseconfidence = abuseconfidence
+        self.country = country
+        self.usagetype = usagetype
+        self.isp = isp
+        self.domain = domain
+        self.istor = istor
+        self.totalreports = totalreports
+        self.lastreportdate = lastreportdate
+
 #source IP is always an even number
 def menu(choice):
     print("coming soon")
@@ -20,11 +32,12 @@ def processCSV():
             return csvarr
 
 def processIPsAbuseDB(iparr, apikey):
-    resultsAbuseIP = []
+    resultsabuseip = []
     for ip in iparr:
-        resultsAbuseIP.append(makeRequestAbuse(ip, apikey))
+        resultsabuseip.append(makeRequestAbuse(ip, apikey))
 
     #Formatted output
+
     decodedresponse = json.loads(response.text)
     print(json.dumps(decodedresponse, sort_keys=True, indent=4))
 
