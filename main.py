@@ -32,12 +32,14 @@ def processCSV():
         for row in ipreader:
             csvarr.append(row[0])
             csvarr.append(row[1])
+        print(csvarr)
         processIPArray(csvarr)
 
 def processIPArray(iparrinput):
-    for ip in iparrinput:
+    for i in range(len(iparrinput)):
         #take all private ips out
-        re.search([0-9], ip)
+        re.search("[0-9]", iparrinput[i])
+        i += 1
     return iparrinput
 
 
@@ -75,5 +77,6 @@ def makeRequestAbuse(ipadd, apikeyreadablerequest):
     return decodedresponse
 
 if __name__ == '__main__':
-    processIPsAbuseDB(processCSV(), apikey.read())
+    processCSV()
+    #processIPsAbuseDB(processCSV(), apikey.read())
     apikey.close()
