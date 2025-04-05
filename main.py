@@ -1,6 +1,7 @@
 import csv
 import json
 import requests
+import re
 
 
 apikey = open("./api.txt", "r")
@@ -27,10 +28,18 @@ def processCSV():
     csvarr = []
     with open(csvpath, newline="") as csvfile:
         ipreader = csv.reader(csvfile, delimiter=",")
+        ipreader.__next__()
         for row in ipreader:
             csvarr.append(row[0])
             csvarr.append(row[1])
-            return csvarr
+        processIPArray(csvarr)
+
+def processIPArray(iparrinput):
+    for ip in iparrinput:
+        #take all private ips out
+        re.search([0-9], ip)
+    return iparrinput
+
 
 def processIPsAbuseDB(iparr, apikeyreadable):
     resultsabuseip = []
@@ -48,7 +57,6 @@ def processIPsAbuseDB(iparr, apikeyreadable):
         runningtotalreports = jsondoc['data']['totalReports']
         runninglastreport = jsondoc['data']['lastReportedAt']
         resultsabuseip.append(CheckedIpAbuse(runningip, runningwhitelist, runningabuseconfidence, runningcountry, runningusagetype, runningisp, runningdomain, runningistor, runningtotalreports, runninglastreport))
-    print(resultsabuseip[0].abuseconfidence)
 
 #    print(json.dumps(decodedresponse, sort_keys=True, indent=4))
 
