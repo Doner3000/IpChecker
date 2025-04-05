@@ -32,11 +32,11 @@ def processCSV():
             csvarr.append(row[1])
             return csvarr
 
-def processIPsAbuseDB(iparr, apikey):
+def processIPsAbuseDB(iparr, apikeyreadable):
     resultsabuseip = []
     for i in range(len(iparr)):
         ip = iparr[i]
-        jsondoc = makeRequestAbuse(ip, apikey)
+        jsondoc = makeRequestAbuse(ip, apikeyreadable)
         runningip = jsondoc['data']['ipAddress']
         runningwhitelist = jsondoc['data']['isWhitelisted']
         runningabuseconfidence = jsondoc['data']['abuseConfidenceScore']
@@ -48,11 +48,11 @@ def processIPsAbuseDB(iparr, apikey):
         runningtotalreports = jsondoc['data']['totalReports']
         runninglastreport = jsondoc['data']['lastReportedAt']
         resultsabuseip.append(CheckedIpAbuse(runningip, runningwhitelist, runningabuseconfidence, runningcountry, runningusagetype, runningisp, runningdomain, runningistor, runningtotalreports, runninglastreport))
-    print(resultsabuseip)
+    print(resultsabuseip[0].abuseconfidence)
 
 #    print(json.dumps(decodedresponse, sort_keys=True, indent=4))
 
-def makeRequestAbuse(ipadd, apikey):
+def makeRequestAbuse(ipadd, apikeyreadablerequest):
     url = "https://api.abuseipdb.com/api/v2/check"
     querystring = {
         'ipAddress': ipadd,
@@ -60,7 +60,7 @@ def makeRequestAbuse(ipadd, apikey):
     }
     headers = {
         'Accept': 'application/json',
-        'Key': apikey
+        'Key': apikeyreadablerequest
     }
     response = requests.request(method='GET', url=url, headers=headers, params=querystring)
     decodedresponse = json.loads(response.text)
