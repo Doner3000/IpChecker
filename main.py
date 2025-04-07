@@ -1,11 +1,11 @@
 import csv
 import json
 import os.path
-from operator import contains
-
 import requests
 import re
 
+
+global apikey
 
 class CheckedIpAbuse:
     def __init__(self, ip, whiteliststatus, abuseconfidence, country, usagetype, isp, domain, istor, totalreports, lastreportdate):
@@ -19,8 +19,6 @@ class CheckedIpAbuse:
         self.istor = istor
         self.totalreports = totalreports
         self.lastreportdate = lastreportdate
-
-#source IP is always an even number
 
 def menu(choice):
     print("coming soon")
@@ -76,6 +74,7 @@ def makeRequestAbuse(ipadd, apikeyreadablerequest):
     return decodedresponse
 
 def checkIfApiKeyLocationIsKnown():
+    global apikey
     if not os.path.exists("./api.txt"):
         print("\033[91mThe Api key has not been found.\033[0m")
         match input("What would you like to do now?\n"
@@ -87,7 +86,8 @@ def checkIfApiKeyLocationIsKnown():
                 apikeymanualkeyinput = input("Type the api key into the console:\n")
                 with open("./api.txt", "w") as file:
                     file.write(apikeymanualkeyinput)
-                    return True
+                    apikey = open("./api.txt", "r")
+                    return "1"
             case "2":
                 apikeymanualpathinput = input("Type the path to the api key into the console (without quotes):\n")
                 with open(apikeymanualpathinput, "r") as readfile:
@@ -95,24 +95,27 @@ def checkIfApiKeyLocationIsKnown():
                     print(apikeytemp)
                     with open("./api.txt", "w") as writefile:
                         writefile.write(apikeytemp)
-                return True
+                apikey = open("./api.txt", "r")
+                return "1"
             case "3":
-                pass
+                apikey = input("Type the api key into the console:\n")
+                return "2"
             case "4":
                 exit(1)
     else:
-        print("\033[92mKey found. Continuing...\033[0m")
-
-def readKeyFromFile():
-    apikey = open("./api.txt", "r")
-    return apikey
+        apikey = open("./api.txt", "r")
+        return "3"
 
 if __name__ == '__main__':
     print("IpChecker v0.1\n\n")
-    if checkIfApiKeyLocationIsKnown():
-        print("\033[92mKey added. Enjoy no warnings (hopefully) anymore! <3\033[0m")
-    else:
-        print("dupa")
+    match (checkIfApiKeyLocationIsKnown()):
+        case "1":
+            print("\033[92mKey successfully added. Enjoy no warnings anymore (hopefully)!\033[0m\n")
+        case "2":
+            print("\033[93mThe provided key was successfully added, but it has not been saved. "
+                  "This results in needing to type the key every time you launch the program.\033[0m\n")
+        case "3":
+            print("\033[92mKey found. Continuing...\033[0m")
     #processCSV()
     #processIPsAbuseDB(processCSV(), apikey.read())
     #apikey.close()
