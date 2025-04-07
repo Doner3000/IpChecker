@@ -1,10 +1,11 @@
 import csv
 import json
+import os.path
+from operator import contains
+
 import requests
 import re
 
-
-apikey = open("./api.txt", "r")
 
 class CheckedIpAbuse:
     def __init__(self, ip, whiteliststatus, abuseconfidence, country, usagetype, isp, domain, istor, totalreports, lastreportdate):
@@ -20,6 +21,7 @@ class CheckedIpAbuse:
         self.lastreportdate = lastreportdate
 
 #source IP is always an even number
+
 def menu(choice):
     print("coming soon")
 
@@ -32,16 +34,13 @@ def processCSV():
         for row in ipreader:
             csvarr.append(row[0])
             csvarr.append(row[1])
-        print(csvarr)
         processIPArray(csvarr)
 
 def processIPArray(iparrinput):
-    for i in range(len(iparrinput)):
-        #take all private ips out
-        re.search("[0-9]", iparrinput[i])
-        i += 1
-    return iparrinput
-
+    # Use list comprehension to filter out private IPs
+    filtered_ips = [ip for ip in iparrinput if not re.search("(10.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}|192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3}|172\\.([1][6-9]|[2][0-9]|[3][0-2])\\.[0-9]{1,3}\\.[0-9]{1,3}|127\\.0\\.0\\.1|0\\.0\\.0\\.0|169\\.254\\.[0-9]{1,3}\\.[0-9]{1,3}|8\\.8\\.8\\.8|8\\.8\\.4\\.4|1\\.1\\.1\\.1)", ip)]
+    print(filtered_ips)
+    return filtered_ips
 
 def processIPsAbuseDB(iparr, apikeyreadable):
     resultsabuseip = []
@@ -76,7 +75,46 @@ def makeRequestAbuse(ipadd, apikeyreadablerequest):
     decodedresponse = json.loads(response.text)
     return decodedresponse
 
+def checkIfApiKeyLocationIsKnown():
+    if not os.path.exists("./api.txt"):
+        print("\033[91mThe Api key has not been found.\033[0m")
+        match input("What would you like to do now?\n"
+                    "Type 1 to add an AbuseIPDB api key and save it to current directory under \"api.txt\"\n"
+                    "Type 2 to provide a path to an AbuseIPDB api key and copy it to the current directory under \"api.txt\"\n"
+                    "Type 3 to add an AbuseIPDB api key without saving it\n"
+                    "Type 4 to exit\n"):
+            case "1":
+                apikeymanualkeyinput = input("Type the api key into the console:\n")
+                with open("./api.txt", "w") as file:
+                    file.write(apikeymanualkeyinput)
+                    return True
+            case "2":
+                apikeymanualpathinput = input("Type the path to the api key into the console (without quotes):\n")
+                with open(apikeymanualpathinput, "r") as readfile:
+                    apikeytemp = str(readfile.read())
+                    print(apikeytemp)
+                    with open("./api.txt", "w") as writefile:
+                        writefile.write(apikeytemp)
+                return True
+            case "3":
+                pass
+            case "4":
+                exit(1)
+    else:
+        print("\033[92mKey found. Continuing...\033[0m")
+
+def readKeyFromFile():
+    apikey = open("./api.txt", "r")
+    return apikey
+
 if __name__ == '__main__':
-    processCSV()
+    print("IpChecker v0.1\n\n")
+    if checkIfApiKeyLocationIsKnown():
+        print("\033[92mKey added. Enjoy no warnings (hopefully) anymore! <3\033[0m")
+    else:
+        print("dupa")
+    #processCSV()
     #processIPsAbuseDB(processCSV(), apikey.read())
-    apikey.close()
+    #apikey.close()
+    print("madeit")
+    exit()
