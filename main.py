@@ -20,8 +20,28 @@ class CheckedIpAbuse:
         self.totalreports = totalreports
         self.lastreportdate = lastreportdate
 
-def menu(choice):
-    print("coming soon")
+def menu():
+    while True:
+        match (input("Hello there, hope you are having a great day!\n"
+                "What would you like to do?\n"
+                "Type a number corresponding to the option you want to choose:\n\n"
+                "1. Check single IP against AbuseIPDB\n"
+                "2. Provide a CSV file containing IP adresses and check against AbuseIPDB\n"
+                "3. Provide an array of IP adresses and check these against AbuseIPDB\n"
+                "9. Settings\n"
+                "0. Exit\n")):
+            case "1":
+                break
+            case "2":
+                break
+            case "3":
+                break
+            case "9":
+                break
+            case "0":
+                break
+            case _:
+                print("Response not a valid number, please try again.")
 
 def processCSV():
     csvpath = input("Please provide the path to csv file: ")
@@ -77,37 +97,40 @@ def checkIfApiKeyLocationIsKnown():
     global apikey
     if not os.path.exists("./api.txt"):
         print("\033[91mThe Api key has not been found.\033[0m")
-        match input("What would you like to do now?\n"
-                    "Type 1 to add an AbuseIPDB api key and save it to current directory under \"api.txt\"\n"
-                    "Type 2 to provide a path to an AbuseIPDB api key and copy it to the current directory under \"api.txt\"\n"
-                    "Type 3 to add an AbuseIPDB api key without saving it\n"
-                    "Type 4 to exit\n"):
-            case "1":
-                apikeymanualkeyinput = input("Type the api key into the console:\n")
-                with open("./api.txt", "w") as file:
-                    file.write(apikeymanualkeyinput)
+        while True:
+            match input("What would you like to do now?\n"
+                        "Type 1 to add an AbuseIPDB api key and save it to current directory under \"api.txt\"\n"
+                        "Type 2 to provide a path to an AbuseIPDB api key and copy it to the current directory under \"api.txt\"\n"
+                        "Type 3 to add an AbuseIPDB api key without saving it\n"
+                        "Type 4 to exit\n"):
+                case "1":
+                    apikeymanualkeyinput = input("Type the api key into the console:\n")
+                    with open("./api.txt", "w") as file:
+                        file.write(apikeymanualkeyinput)
+                        apikey = open("./api.txt", "r")
+                        return "1"
+                case "2":
+                    apikeymanualpathinput = input("Type the path to the api key into the console (without quotes):\n")
+                    with open(apikeymanualpathinput, "r") as readfile:
+                        apikeytemp = str(readfile.read())
+                        print(apikeytemp)
+                        with open("./api.txt", "w") as writefile:
+                            writefile.write(apikeytemp)
                     apikey = open("./api.txt", "r")
                     return "1"
-            case "2":
-                apikeymanualpathinput = input("Type the path to the api key into the console (without quotes):\n")
-                with open(apikeymanualpathinput, "r") as readfile:
-                    apikeytemp = str(readfile.read())
-                    print(apikeytemp)
-                    with open("./api.txt", "w") as writefile:
-                        writefile.write(apikeytemp)
-                apikey = open("./api.txt", "r")
-                return "1"
-            case "3":
-                apikey = input("Type the api key into the console:\n")
-                return "2"
-            case "4":
-                exit(1)
+                case "3":
+                    apikey = input("Type the api key into the console:\n")
+                    return "2"
+                case "4":
+                    exit(1)
+                case _:
+                    print("Response not a valid number, please try again.")
     else:
         apikey = open("./api.txt", "r")
         return "3"
 
 if __name__ == '__main__':
-    print("IpChecker v0.1\n\n")
+    print("IpChecker v0.1\n")
     match (checkIfApiKeyLocationIsKnown()):
         case "1":
             print("\033[92mKey successfully added. Enjoy no warnings anymore (hopefully)!\033[0m\n")
@@ -116,6 +139,7 @@ if __name__ == '__main__':
                   "This results in needing to type the key every time you launch the program.\033[0m\n")
         case "3":
             print("\033[92mKey found. Continuing...\033[0m")
+    menu()
     #processCSV()
     #processIPsAbuseDB(processCSV(), apikey.read())
     #apikey.close()
