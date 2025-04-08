@@ -79,6 +79,7 @@ def setupWizard():
                     "of each run? Type in \"1\" for yes, or \"0\" for no.\033[0m\n"):
             case "0":
                 answerreports = False
+                answerreportsformat = False
                 break
             case "1":
                 answerreports = True
@@ -116,6 +117,15 @@ def setupWizard():
             "To include it type \"5\"\n"
             "totalReports - how many user reports are associated with the IP address. To include it type \"6\"\n"
             "lastReport - when was the last report made. To include it type \"7\"\033[0m\n")
+
+        iswhitelistedcustom = False
+        countrycode = False
+        usagetypecustom = False
+        ispcustom = False
+        domaincustom = False
+        istorcustom = False
+        totalreportscustom = False
+        lastreportcustom = False
         customfieldsuserinput = input()
         customfieldsarray = [int(num) for num in customfieldsuserinput.split(",")]
 
@@ -124,14 +134,6 @@ def setupWizard():
             break
         else:
             customfieldsvalue = True
-            iswhitelistedcustom = False
-            countrycode = False
-            usagetypecustom = False
-            ispcustom = False
-            domaincustom = False
-            istorcustom = False
-            totalreportscustom = False
-            lastreportcustom = False
             for field in customfieldsarray:
                 match int(field):
                     case 0:
@@ -151,11 +153,10 @@ def setupWizard():
                     case 7:
                         lastreportcustom = True
                     case _:
-                        print("\033[91mInvalid value. Skipping...")
+                        print("\033[91mInvalid value. Skipping...\n")
             break
     ipadressconst = True
     abuseconfidenceconst = True
-
 
     while True:
         print("\033[96mOkay, we arrived at the last step. Don't worry, if you followed all the steps and I did not mess "
@@ -166,14 +167,21 @@ def setupWizard():
             "that here: \"https://www.abuseipdb.com/faq.html\". I believe that it does not make sense to include "
             "any IP addresses of which Abuse confidence score is 0, so that is the value that is going to be ingored "
             "when you just press \"ENTER\". Cool thing is, you can set the threshold yourself. To do that, just "
-            "type the value between 0-100 into the console.\033[0m\n"
+            "type the value between 0-100 into the console and press \"ENTER\".\033[0m\n"
             "\033[93mNote, that this setting will be applied to the reports as well as the individual runs of the program, "
             "even when reports are not being generated.\033[0m\n")
         threshold = int(input())
         if threshold >= 0 <= 100:
             #have to test it
             break
-    makeNewConfigFile(confidenceThreshold=threshold, isOutputCustom=customfieldsvalue, wantsReports=answerreports, reportFormat=answerreportsformat, isWhitelistedCustom=iswhitelistedcustom, countryCodeCustom=countrycode, usageTypeCustom=usagetypecustom, ispcustom=ispcustom, domainCustom=domaincustom, isTorCustom=istorcustom, totalReportsCustom=totalreportscustom, lastReportCustom=lastreportcustom)
+    if customfieldsvalue:
+        makeNewConfigFile(confidenceThreshold=threshold, isOutputCustom=customfieldsvalue, wantsReports=answerreports, reportFormat=answerreportsformat, isWhitelistedCustom=iswhitelistedcustom, countryCodeCustom=countrycode, usageTypeCustom=usagetypecustom, ispcustom=ispcustom, domainCustom=domaincustom, isTorCustom=istorcustom, totalReportsCustom=totalreportscustom, lastReportCustom=lastreportcustom)
+        print("\033[92Config with custom values added. You can find it in the current directory under \"config.json\".\033[0m\n")
+    else:
+        makeNewConfigFile(confidenceThreshold=threshold, isOutputCustom=customfieldsvalue, wantsReports=answerreports, reportFormat=answerreportsformat)
+        print("\033[93mConfig added, custom values will be skipped. You can find it in the current directory under \"config.json\".\033[0m\n")
+    print("\033[96mIt seems like we are done here. Enjoy using the program now!\033[0m\n")
+    menu()
 
 def addApiKey():
     global apikey
@@ -198,8 +206,11 @@ def addApiKey():
             case _:
                 print("\033[91mInvalid value, please choose between \"1\", \"2\", \"3\" or \"4\".\033[0m\n")
 
-def makeNewConfigFile(**kwargs):
-    apikeysave = kwargs.get("apikeysave")
+def makeNewConfigFile(*args):
+    global apikey
+    for arg in args:
+
+"""    apikeysave = kwargs.get("apikeysave")
     confidenceThreshold = kwargs.get("confidenceThreshold")
     isOutputCustom = kwargs.get("isOutputCustom")
     wantsReports = kwargs.get("wantsReports")
@@ -213,9 +224,42 @@ def makeNewConfigFile(**kwargs):
     domain = kwargs.get("domainCustom")
     isTor = kwargs.get("isTorCustom")
     totalReports = kwargs.get("totalReportsCustom")
-    lastReport = kwargs.get("lastReportCustom")
+    lastReport = kwargs.get("lastReportCustom")"""
+    configfiledicttosave = {
+        "config": {
+            "apiKey": apikey,
+            "confidenceThreshold": confidenceThreshold,
+            "isOutputCustom": 1,
+            "wantsReports": true,
+            "reportFormat": "csv"
+        },
+        "defaultOutput": {
+            "ipAdress": True,
+            "isWhitelisted": True,
+            "abuseConfidence": True,
+            "countryCode": True,
+            "usageType": True,
+            "isp": True,
+            "domain": True,
+            "isTor": True,
+            "totalReports": True,
+            "lastReport": True
+        },
+        "customOutput": {
+            "ipAdress": true,
+            "isWhitelisted": true,
+            "abuseConfidence": true,
+            "countryCode": true,
+            "usageType": true,
+            "isp": true,
+            "domain": true,
+            "isTor": true,
+            "totalReports": true,
+            "lastReport": true
+        }
+    }
     with open("./config.json", "w") as jsonconfigfilewrite:
-        json.dumps()
+        json.dump(configfiledicttosave, jsonconfigfilewrite)
 
 
 def processCSV():
