@@ -41,7 +41,7 @@ def menu():
             case "9":
                 break
             case "0":
-                break
+                exit("Exitting...")
             case _:
                 print("Response not a valid number, please try again.\n")
 
@@ -69,17 +69,17 @@ def setupWizard():
             "There should be a menu, where you can choose between \"Account\" and \"Logout\". Click on \"Account\". "
             "You should have been redirected to your profile page. Click on the \"API\" tab. In the \"Keys\" container "
             "you can see all created API keys. If you already have one (or more) you can just copy it. "
-            "If you don't have one yet, click on \"Create Key\" on the right in abovementioned container."
+            "If you don't have one yet, click on \"Create Key\" on the right in abovementioned container. "
             "You will need to name it and click on \"CREATE\" button to create the key. Once done, you can just copy the key "
             "into the clipboard and continue with the wizard. To do that, just click ENTER on your keyboard. :)\033[0m\n")
     addApiKey()
     while True:
+        answerreports = False
+        answerreportsformat = False
         match input("\033[96mHey, it seems like you have added your first API key, cool!\n"
-                    "Now, this program can generate reports for you. Would you like to generate reports at the end"
+                    "Now, this program can generate reports for you. Would you like to generate reports at the end "
                     "of each run? Type in \"1\" for yes, or \"0\" for no.\033[0m\n"):
             case "0":
-                answerreports = False
-                answerreportsformat = False
                 break
             case "1":
                 answerreports = True
@@ -94,20 +94,21 @@ def setupWizard():
                             break
                         case _:
                             print("\033[91mInvalid value, please choose between \"0\" and \"1\".\033[0m\n")
+                break
             case _:
                 print("\033[91mInvalid value, please choose between \"0\" and \"1\".\033[0m\n")
     while True:
-        print("\033[96Allright, reports done. Let's dive into the actual data. There are 10 values that can be returned "
+        print("\033[96mAllright, reports done. Let's dive into the actual data. There are 10 values that can be returned "
             "by this program. Before I give you the list of all of them, I need to explain you a few things.\033[0m\n"
             "\033[93mFirstly, these settings are applied to individual runs of the program, as well as to the reports "
             "themselves (if set). Secondly, the value of each field is set to \"True\" as default, so if you just "
             "press \"ENTER\" after asked for an input, you will get all available information. Lastly, you have to "
             "type the number of the fields you want to include. You can choose between 0 and 7, each number must be "
-            "separated with a comma symbol \",\". There can be \033[91mNO\033[0m spaces after commas.\033[0m\n"
+            "separated with a comma symbol \",\". There can be \033[91mNO \033[93mspaces after commas.\033[0m\n"
             "\033[96mipaddress - contains the IP address and will always be included.\n"
             "isWhitelisted - this field will return value \"True\" or \"False\", depending on whitelist status. "
             "To include it type \"0\"\n"
-            "abuseConfidence - abuse confidence score, will be explained in the next step. This field will always"
+            "abuseConfidence - abuse confidence score, will be explained in the next step. This field will always "
             "be included.\n"
             "countryCode - country code associated with the IP address. To include it type \"1\"\n"
             "usageType - what the IP is used for. To include it type \"2\"\n"
@@ -127,36 +128,42 @@ def setupWizard():
         totalreportscustom = False
         lastreportcustom = False
         customfieldsuserinput = input()
-        customfieldsarray = [int(num) for num in customfieldsuserinput.split(",")]
+        customfieldsarray = [choice for choice in customfieldsuserinput.split(",")]
 
-        if not customfieldsarray:
+        if customfieldsarray[0] == "":
             customfieldsvalue = False
             break
         else:
             customfieldsvalue = True
             for field in customfieldsarray:
-                match int(field):
-                    case 0:
+                match field:
+                    case "0":
                         iswhitelistedcustom = True
-                    case 1:
+                        print("\033[92mValue of isWhitelisted set to True.\033[0m")
+                    case "1":
                         countrycode = True
-                    case 2:
+                        print("\033[92mValue of countryCode set to True.\033[0m")
+                    case "2":
                         usagetypecustom = True
-                    case 3:
+                        print("\033[92mValue of usageType set to True.\033[0m")
+                    case "3":
                         ispcustom = True
-                    case 4:
+                        print("\033[92mValue of isp set to True.\033[0m")
+                    case "4":
                         domaincustom = True
-                    case 5:
+                        print("\033[92mValue of domain set to True.\033[0m")
+                    case "5":
                         istorcustom = True
-                    case 6:
+                        print("\033[92mValue of isTor set to True.\033[0m")
+                    case "6":
                         totalreportscustom = True
-                    case 7:
+                        print("\033[92mValue of totalReports set to True.\033[0m")
+                    case "7":
                         lastreportcustom = True
+                        print("\033[92mValue of lastReport set to True.\033[0m")
                     case _:
-                        print("\033[91mInvalid value. Skipping...\n")
+                        print("\033[91mInvalid value. Skipping...\033[0m")
             break
-    ipadressconst = True
-    abuseconfidenceconst = True
 
     while True:
         print("\033[96mOkay, we arrived at the last step. Don't worry, if you followed all the steps and I did not mess "
@@ -169,74 +176,77 @@ def setupWizard():
             "when you just press \"ENTER\". Cool thing is, you can set the threshold yourself. To do that, just "
             "type the value between 0-100 into the console and press \"ENTER\".\033[0m\n"
             "\033[93mNote, that this setting will be applied to the reports as well as the individual runs of the program, "
-            "even when reports are not being generated.\033[0m\n")
-        threshold = int(input())
-        if threshold >= 0 <= 100:
+            "even when reports are not being generated.\033[0m")
+        threshold = input()
+        if int(threshold) >= 0 <= 100:
             #have to test it
             break
+        else:
+            print("\033[93mDefault value of \"1\" will be set.\033[0m")
+            threshold = "1"
+            break
+
     if customfieldsvalue:
-        makeNewConfigFile(confidenceThreshold=threshold, isOutputCustom=customfieldsvalue, wantsReports=answerreports, reportFormat=answerreportsformat, isWhitelistedCustom=iswhitelistedcustom, countryCodeCustom=countrycode, usageTypeCustom=usagetypecustom, ispcustom=ispcustom, domainCustom=domaincustom, isTorCustom=istorcustom, totalReportsCustom=totalreportscustom, lastReportCustom=lastreportcustom)
-        print("\033[92Config with custom values added. You can find it in the current directory under \"config.json\".\033[0m\n")
+        makeNewConfigFile(confidencethreshold=threshold, isoutputcustom=customfieldsvalue, wantsreports=answerreports, reportformat=answerreportsformat, iswhitelistedcustom=iswhitelistedcustom, countrycodecustom=countrycode, usagetypecustom=usagetypecustom, ispcustom=ispcustom, domaincustom=domaincustom, istorcustom=istorcustom, totalreportscustom=totalreportscustom, lastreportcustom=lastreportcustom)
+        print("\033[92mConfig with custom values added. You can find it in the current directory under \"config.json\".\033[0m")
     else:
-        makeNewConfigFile(confidenceThreshold=threshold, isOutputCustom=customfieldsvalue, wantsReports=answerreports, reportFormat=answerreportsformat)
-        print("\033[93mConfig added, custom values will be skipped. You can find it in the current directory under \"config.json\".\033[0m\n")
-    print("\033[96mIt seems like we are done here. Enjoy using the program now!\033[0m\n")
+        makeNewConfigFile(confidencethreshold=threshold, isoutputcustom=customfieldsvalue, wantsreports=answerreports, reportformat=answerreportsformat)
+        print("\033[93mConfig added, custom values will be skipped. You can find it in the current directory under \"config.json\".\033[0m")
+    print("\033[96mIt seems like we are done here. Enjoy using the program now!\033[0m")
     menu()
 
 def addApiKey():
     global apikey
     while True:
         match input("What would you like to do now?\n"
-                    "Type 1 to add an AbuseIPDB api key and save it to the current directory under \"api.txt\"\n"
-                    "Type 2 to provide a path to an AbuseIPDB api key and copy it to the current directory under \"api.txt\"\n"
-                    "Type 3 to add an AbuseIPDB api key without saving it (not recommended)\n"
+                    "Type 1 to add an AbuseIPDB API key and save it to the current to the config file \"config.json\".\n"
+                    "Type 2 to provide a path to an AbuseIPDB API key and copy it to the config file \"config.json\".\n"
+                    "Type 3 to add an AbuseIPDB API key without saving it (not recommended)\n"
                     "Type 4 to exit\n"):
             case "1":
                 apikey = input("Type the api key into the console:\n")
+                break
             case "2":
                 apikeymanualpathinput = input("Type the path to the api key into the console (without quotes):\n")
                 with open(apikeymanualpathinput, "r") as readfile:
                     apikey = str(readfile.read())
-                return "1"
+                break
             case "3":
+                print("For now this function works like the first one. Will be added later.")   #add later
                 apikey = input("Type the api key into the console:\n")
-                return "2"
+                break
             case "4":
                 exit(1)
             case _:
                 print("\033[91mInvalid value, please choose between \"1\", \"2\", \"3\" or \"4\".\033[0m\n")
 
-def makeNewConfigFile(*args):
+def makeNewConfigFile(**kwargs):
     global apikey
-    for arg in args:
-
-"""    apikeysave = kwargs.get("apikeysave")
-    confidenceThreshold = kwargs.get("confidenceThreshold")
-    isOutputCustom = kwargs.get("isOutputCustom")
-    wantsReports = kwargs.get("wantsReports")
-    reportFormat = kwargs.get("reportFormat")
-    ipaddress = kwargs.get("ipaddress")
-    isWhitelisted = kwargs.get("isWhitelistedCustom")
-    abuseConfidence = kwargs.get("abuseConfidenceCustom")
-    countryCode = kwargs.get("countryCodeCustom")
-    usageType = kwargs.get("usageTypeCustom")
-    isp = kwargs.get("ispCustom")
-    domain = kwargs.get("domainCustom")
-    isTor = kwargs.get("isTorCustom")
-    totalReports = kwargs.get("totalReportsCustom")
-    lastReport = kwargs.get("lastReportCustom")"""
+    confidencethreshold = kwargs.get("threshold")
+    isoutputcustom = kwargs.get("isoutputcustom")
+    wantsreports = kwargs.get("wantsreports")
+    reportformat = kwargs.get("reportformat")
+    iswhitelisted = kwargs.get("iswhitelistedcustom")
+    abuseconfidence = kwargs.get("abuseconfidencecustom")
+    countrycode = kwargs.get("countrycodecustom")
+    usagetype = kwargs.get("usagetypecustom")
+    isp = kwargs.get("ispcustom")
+    domain = kwargs.get("domaincustom")
+    istor = kwargs.get("istorcustom")
+    totalreports = kwargs.get("totalreportscustom")
+    lastreport = kwargs.get("lastreportcustom")
     configfiledicttosave = {
         "config": {
             "apiKey": apikey,
-            "confidenceThreshold": confidenceThreshold,
-            "isOutputCustom": 1,
-            "wantsReports": true,
-            "reportFormat": "csv"
+            "confidenceThreshold": confidencethreshold,
+            "isOutputCustom": isoutputcustom,
+            "wantsReports": wantsreports,
+            "reportFormat": reportformat
         },
         "defaultOutput": {
             "ipAdress": True,
             "isWhitelisted": True,
-            "abuseConfidence": True,
+            "abuseConfidence": 1,
             "countryCode": True,
             "usageType": True,
             "isp": True,
@@ -246,16 +256,16 @@ def makeNewConfigFile(*args):
             "lastReport": True
         },
         "customOutput": {
-            "ipAdress": true,
-            "isWhitelisted": true,
-            "abuseConfidence": true,
-            "countryCode": true,
-            "usageType": true,
-            "isp": true,
-            "domain": true,
-            "isTor": true,
-            "totalReports": true,
-            "lastReport": true
+            "ipAdress": True,
+            "isWhitelisted": iswhitelisted,
+            "abuseConfidence": abuseconfidence,
+            "countryCode": countrycode,
+            "usageType": usagetype,
+            "isp": isp,
+            "domain": domain,
+            "isTor": istor,
+            "totalReports": totalreports,
+            "lastReport": lastreport
         }
     }
     with open("./config.json", "w") as jsonconfigfilewrite:
