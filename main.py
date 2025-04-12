@@ -317,8 +317,6 @@ def outputDataAbuseIPDB(iparr):
     global configfile
     confidencethresholdconfigval = configfile['config']['confidenceThreshold']
     isoutputcustomconfigval = configfile['config']['isOutputCustom']
-    wantsreportsconfigval = configfile['config']['wantsReports']
-    reportformatconfigval = configfile['config']['reportFormat']
     if isoutputcustomconfigval == 1:
         readfromdefaultorcustom = 'customOutput'
     else:
@@ -365,6 +363,7 @@ def outputDataAbuseIPDB(iparr):
                 case _:
                     i += 1
         print("")
+    whatReportToGenerate()
 
     print("\033[91mEverything is done, reports have not been generated, since this feature is not implemented yet.\033[0m\n"
           "Thanks for using the program. If you encountered any problems, please report them under \"Issues\" on the GitHub page of the project. You will be redirected to the menu now.")
@@ -382,6 +381,18 @@ def makeRequestAbuse(ipadd, apikeyreadablerequest):
     response = requests.request(method='GET', url=url, headers=headers, params=querystring)
     decodedresponse = json.loads(response.text)
     return decodedresponse
+
+def whatReportToGenerate():
+    global configfile
+    wantsreportsconfigval = configfile['config']['wantsReports']
+    if wantsreportsconfigval:
+        reportformatconfigval = configfile['config']['reportFormat']
+        if reportformatconfigval == "csv":
+            generateReportCSV()
+        elif reportformatconfigval == "json":
+            generateReportJSON()
+    else:
+        print("\033[96mReports are not going to be generated since this option has not been chosen in the setup.\033[0m")
 
 def generateReportCSV():
     print("Coming soon")
