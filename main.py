@@ -6,6 +6,7 @@ import re
 
 
 global apikey
+global apikeytemp
 global configfile
 
 class CheckedIpAbuse:
@@ -23,23 +24,31 @@ class CheckedIpAbuse:
 
 def menu():
     checkIfConfigIsInCurrentDir()
+    global apikey
+    global configfile
+    apikey = configfile['config']['apiKey']
+    if apikey != "":
+        apikey = apikey
+    else:
+        apikey = apikeytemp
     while True:
         match (input("Hello there, hope you are having a great day!\n"
                 "What would you like to do?\n"
                 "Type a number corresponding to the option you want to choose:\n\n"
-                "1. Check single IP against AbuseIPDB\n"
+                "1. Check single, or multiple (separated by a comma, without spaces) IPs against AbuseIPDB\n"
                 "2. Provide a CSV file containing IP addresses and check against AbuseIPDB\n"
-                "3. Provide an array of IP addresses and check these against AbuseIPDB\n"
                 "9. Settings\n"
                 "0. Exit\n")):
             case "1":
-                break
+                iparr = input("Please type the IP addresses, separated by a comma, without spaces.\n")
+                inputuser = [ip for ip in iparr.split(",")]
+                processIPsAbuseDB(processIPArray(inputuser), apikey)
             case "2":
-                break
+                processIPsAbuseDB(processIPArray(processCSV()), apikey)
             case "3":
-                break
+                print("Feature not implemented yet.")
             case "9":
-                break
+                print("Feature not implemented yet.")
             case "0":
                 exit("Exitting...")
             case _:
@@ -177,13 +186,13 @@ def setupWizard():
             "type the value between 0-100 into the console and press \"ENTER\".\033[0m\n"
             "\033[93mNote, that this setting will be applied to the reports as well as the individual runs of the program, "
             "even when reports are not being generated.\033[0m")
-        threshold = input()
-        if int(threshold) >= 0 <= 100:
+        threshold = int(input())
+        if threshold >= 0 <= 100:
             #have to test it
             break
         else:
             print("\033[93mDefault value of \"1\" will be set.\033[0m")
-            threshold = "1"
+            threshold = 1
             break
 
     if customfieldsvalue:
@@ -197,6 +206,10 @@ def setupWizard():
 
 def addApiKey():
     global apikey
+    global apikeytemp
+    apikey = ""
+    apikeytemp = ""
+
     while True:
         match input("What would you like to do now?\n"
                     "Type 1 to add an AbuseIPDB API key and save it to the current to the config file \"config.json\".\n"
@@ -212,8 +225,7 @@ def addApiKey():
                     apikey = str(readfile.read())
                 break
             case "3":
-                print("For now this function works like the first one. Will be added later.")   #add later
-                apikey = input("Type the api key into the console:\n")
+                apikeytemp = input("Type the api key into the console:\n")
                 break
             case "4":
                 exit(1)
@@ -222,12 +234,11 @@ def addApiKey():
 
 def makeNewConfigFile(**kwargs):
     global apikey
-    confidencethreshold = kwargs.get("threshold")
+    confidencethreshold = kwargs.get("confidencethreshold")
     isoutputcustom = kwargs.get("isoutputcustom")
     wantsreports = kwargs.get("wantsreports")
     reportformat = kwargs.get("reportformat")
     iswhitelisted = kwargs.get("iswhitelistedcustom")
-    abuseconfidence = kwargs.get("abuseconfidencecustom")
     countrycode = kwargs.get("countrycodecustom")
     usagetype = kwargs.get("usagetypecustom")
     isp = kwargs.get("ispcustom")
@@ -244,9 +255,7 @@ def makeNewConfigFile(**kwargs):
             "reportFormat": reportformat
         },
         "defaultOutput": {
-            "ipAdress": True,
             "isWhitelisted": True,
-            "abuseConfidence": 1,
             "countryCode": True,
             "usageType": True,
             "isp": True,
@@ -256,9 +265,7 @@ def makeNewConfigFile(**kwargs):
             "lastReport": True
         },
         "customOutput": {
-            "ipAdress": True,
             "isWhitelisted": iswhitelisted,
-            "abuseConfidence": abuseconfidence,
             "countryCode": countrycode,
             "usageType": usagetype,
             "isp": isp,
@@ -270,7 +277,6 @@ def makeNewConfigFile(**kwargs):
     }
     with open("./config.json", "w") as jsonconfigfilewrite:
         json.dump(configfiledicttosave, jsonconfigfilewrite)
-
 
 def processCSV():
     csvpath = input("Please provide the path to csv file: ")
@@ -305,8 +311,63 @@ def processIPsAbuseDB(iparr, apikeyreadable):
         runningtotalreports = jsondoc['data']['totalReports']
         runninglastreport = jsondoc['data']['lastReportedAt']
         resultsabuseip.append(CheckedIpAbuse(runningip, runningwhitelist, runningabuseconfidence, runningcountry, runningusagetype, runningisp, runningdomain, runningistor, runningtotalreports, runninglastreport))
+    outputDataAbuseIPDB(resultsabuseip)
 
-#    print(json.dumps(decodedresponse, sort_keys=True, indent=4))
+def outputDataAbuseIPDB(iparr):
+    global configfile
+    confidencethresholdconfigval = configfile['config']['confidenceThreshold']
+    isoutputcustomconfigval = configfile['config']['isOutputCustom']
+    wantsreportsconfigval = configfile['config']['wantsReports']
+    reportformatconfigval = configfile['config']['reportFormat']
+    if isoutputcustomconfigval == 1:
+        readfromdefaultorcustom = 'customOutput'
+    else:
+        readfromdefaultorcustom = 'defaultOutput'
+    outputbooleanvalueslist = [configfile[readfromdefaultorcustom]['isWhitelisted'],
+    configfile[readfromdefaultorcustom]['countryCode'],
+    configfile[readfromdefaultorcustom]['usageType'],
+    configfile[readfromdefaultorcustom]['isp'],
+    configfile[readfromdefaultorcustom]['domain'],
+    configfile[readfromdefaultorcustom]['isTor'],
+    configfile[readfromdefaultorcustom]['totalReports'],
+    configfile[readfromdefaultorcustom]['lastReport']]
+    for ip in iparr:
+        print("IP address: " + ip.ip)
+        print(" Abuse confidence: " + str(ip.abuseconfidence))
+        for i in range(len(outputbooleanvalueslist)):
+            match outputbooleanvalueslist[i]:
+                case True:
+                    match i:
+                        case 0:
+                            print(" Is whitelisted: " + str(ip.whiteliststatus))
+                            i += 1
+                        case 1:
+                            print(" Contry code: " + str(ip.country))
+                            i += 1
+                        case 2:
+                            print(" Usage type: " + str(ip.usagetype))
+                            i += 1
+                        case 3:
+                            print(" ISP (Internet Service Provider): " + str(ip.isp))
+                            i += 1
+                        case 4:
+                            print(" Domain: " + str(ip.domain))
+                            i += 1
+                        case 5:
+                            print(" Is TOR: " + str(ip.istor))
+                            i += 1
+                        case 6:
+                            print(" Total reports: " + str(ip.totalreports))
+                            i += 1
+                        case 7:
+                            print(" Last report at: " + str(ip.lastreportdate))
+                            i += 1
+                case _:
+                    i += 1
+        print("")
+
+    print("\033[91mEverything is done, reports have not been generated, since this feature is not implemented yet.\033[0m\n"
+          "Thanks for using the program. If you encountered any problems, please report them under \"Issues\" on the GitHub page of the project. You will be redirected to the menu now.")
 
 def makeRequestAbuse(ipadd, apikeyreadablerequest):
     url = "https://api.abuseipdb.com/api/v2/check"
