@@ -5,3 +5,6 @@ is a Python script, which takes input in form of either a CSV file, or a list of
 1. Install Python version 3.10 or later, if you didn't already.
 2. Install following packages using pip if not present on the system: re, json, csv, requests, os.
 3. Start the script and enjoy using it.
+
+## Script quirks
+If you provide a CSV file as input, first line (the one containing table header) will be skipped.
