@@ -279,7 +279,7 @@ def makeNewConfigFile(**kwargs):
         json.dump(configfiledicttosave, jsonconfigfilewrite)
 
 def processCSV():
-    csvpath = input("Please provide the path to csv file: ")
+    csvpath = input("Please provide the path to the CSV file: ")
     csvarr = []
     with open(csvpath, newline="") as csvfile:
         ipreader = csv.reader(csvfile, delimiter=",")
@@ -287,11 +287,12 @@ def processCSV():
         for row in ipreader:
             csvarr.append(row[0])
             csvarr.append(row[1])
-        processIPArray(csvarr)
+    return csvarr
 
 def processIPArray(iparrinput):
     # Use list comprehension to filter out private IPs
-    filtered_ips = [ip for ip in iparrinput if not re.search("(10.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}|192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3}|172\\.([1][6-9]|[2][0-9]|[3][0-2])\\.[0-9]{1,3}\\.[0-9]{1,3}|127\\.0\\.0\\.1|0\\.0\\.0\\.0|169\\.254\\.[0-9]{1,3}\\.[0-9]{1,3}|8\\.8\\.8\\.8|8\\.8\\.4\\.4|1\\.1\\.1\\.1)", ip)]
+    print(type(iparrinput))
+    filtered_ips = [ip for ip in iparrinput if not re.search("(10.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}|192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3}|172\\.(1[6-9]|2[0-9]|3[0-2])\\.[0-9]{1,3}\\.[0-9]{1,3}|127\\.0\\.0\\.1|0\\.0\\.0\\.0|169\\.254\\.[0-9]{1,3}\\.[0-9]{1,3}|8\\.8\\.8\\.8|8\\.8\\.4\\.4|1\\.1\\.1\\.1)", ip)]
     print(filtered_ips)
     return filtered_ips
 
