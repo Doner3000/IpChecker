@@ -188,7 +188,6 @@ def setupWizard():
             "even when reports are not being generated.\033[0m")
         threshold = int(input())
         if threshold >= 0 <= 100:
-            #have to test it
             break
         else:
             print("\033[93mDefault value of \"1\" will be set.\033[0m")
@@ -291,9 +290,7 @@ def processCSV():
 
 def processIPArray(iparrinput):
     # Use list comprehension to filter out private IPs
-    print(type(iparrinput))
     filtered_ips = [ip for ip in iparrinput if not re.search("(10.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}|192\\.168\\.[0-9]{1,3}\\.[0-9]{1,3}|172\\.(1[6-9]|2[0-9]|3[0-2])\\.[0-9]{1,3}\\.[0-9]{1,3}|127\\.0\\.0\\.1|0\\.0\\.0\\.0|169\\.254\\.[0-9]{1,3}\\.[0-9]{1,3}|8\\.8\\.8\\.8|8\\.8\\.4\\.4|1\\.1\\.1\\.1)", ip)]
-    print(filtered_ips)
     return filtered_ips
 
 def processIPsAbuseDB(iparr, apikeyreadable):
@@ -331,39 +328,42 @@ def outputDataAbuseIPDB(iparr):
     configfile[readfromdefaultorcustom]['totalReports'],
     configfile[readfromdefaultorcustom]['lastReport']]
     for ip in iparr:
-        print("IP address: " + ip.ip)
-        print(" Abuse confidence: " + str(ip.abuseconfidence))
-        for i in range(len(outputbooleanvalueslist)):
-            match outputbooleanvalueslist[i]:
-                case True:
-                    match i:
-                        case 0:
-                            print(" Is whitelisted: " + str(ip.whiteliststatus))
-                            i += 1
-                        case 1:
-                            print(" Contry code: " + str(ip.country))
-                            i += 1
-                        case 2:
-                            print(" Usage type: " + str(ip.usagetype))
-                            i += 1
-                        case 3:
-                            print(" ISP (Internet Service Provider): " + str(ip.isp))
-                            i += 1
-                        case 4:
-                            print(" Domain: " + str(ip.domain))
-                            i += 1
-                        case 5:
-                            print(" Is TOR: " + str(ip.istor))
-                            i += 1
-                        case 6:
-                            print(" Total reports: " + str(ip.totalreports))
-                            i += 1
-                        case 7:
-                            print(" Last report at: " + str(ip.lastreportdate))
-                            i += 1
-                case _:
-                    i += 1
-        print("")
+        if ip.abuseconfidence >= confidencethresholdconfigval:
+            print("IP address: " + ip.ip)
+            print(" Abuse confidence: " + str(ip.abuseconfidence))
+            for i in range(len(outputbooleanvalueslist)):
+                match outputbooleanvalueslist[i]:
+                    case True:
+                        match i:
+                            case 0:
+                                print(" Is whitelisted: " + str(ip.whiteliststatus))
+                                i += 1
+                            case 1:
+                                print(" Contry code: " + str(ip.country))
+                                i += 1
+                            case 2:
+                                print(" Usage type: " + str(ip.usagetype))
+                                i += 1
+                            case 3:
+                                print(" ISP (Internet Service Provider): " + str(ip.isp))
+                                i += 1
+                            case 4:
+                                print(" Domain: " + str(ip.domain))
+                                i += 1
+                            case 5:
+                                print(" Is TOR: " + str(ip.istor))
+                                i += 1
+                            case 6:
+                                print(" Total reports: " + str(ip.totalreports))
+                                i += 1
+                            case 7:
+                                print(" Last report at: " + str(ip.lastreportdate))
+                                i += 1
+                    case _:
+                        i += 1
+            print("")
+        else:
+            print("Confidence threshold value of " + str(confidencethresholdconfigval) + " not met for IP: " + str(ip.ip))
     whatReportToGenerate()
 
     print("\033[91mEverything is done, reports have not been generated, since this feature is not implemented yet.\033[0m\n"
