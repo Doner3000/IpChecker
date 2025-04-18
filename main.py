@@ -1,4 +1,5 @@
 import csv
+import datetime
 import json
 import os.path
 import requests
@@ -28,7 +29,9 @@ def menu():
     global configfile
     apikey = configfile['config']['apiKey']
     if apikey != "":
-        apikey = apikey
+        pass
+    elif apikeytemp == "":
+        addApiKey()
     else:
         apikey = apikeytemp
     while True:
@@ -93,16 +96,19 @@ def setupWizard():
             case "1":
                 answerreports = True
                 while True:
-                    match input("\033[96mWhat format would you like your reports in? You can choose between \"CSV\" and \"JSON\"."
-                                "Type \"0\" for CSV, or \"1\" for JSON\033[0m\n"):
+                    match input("\033[96mWhat format would you like your reports in? You can choose between \"TXT\", \"CSV\" and \"JSON\". "
+                                "Type \"0\" for TXT, \"1\" for CSV (not supported yet), or \"2\" for JSON (not supported yet).\033[0m\n"):
                         case "0":
-                            answerreportsformat = "csv"
+                            answerreportsformat = "TXT"
                             break
                         case "1":
-                            answerreportsformat = "json"
+                            answerreportsformat = "CSV"
+                            break
+                        case "2":
+                            answerreportsformat = "JSON"
                             break
                         case _:
-                            print("\033[91mInvalid value, please choose between \"0\" and \"1\".\033[0m\n")
+                            print("\033[91mInvalid value, please choose between \"0\", \"1\" and \"3\".\033[0m\n")
                 break
             case _:
                 print("\033[91mInvalid value, please choose between \"0\" and \"1\".\033[0m\n")
@@ -173,7 +179,6 @@ def setupWizard():
                     case _:
                         print("\033[91mInvalid value. Skipping...\033[0m")
             break
-
     while True:
         print("\033[96mOkay, we arrived at the last step. Don't worry, if you followed all the steps and I did not mess "
             "anything up, it is the last time you see this wizard. :)\n"
@@ -211,10 +216,11 @@ def addApiKey():
 
     while True:
         match input("What would you like to do now?\n"
-                    "Type 1 to add an AbuseIPDB API key and save it to the current to the config file \"config.json\".\n"
-                    "Type 2 to provide a path to an AbuseIPDB API key and copy it to the config file \"config.json\".\n"
+                    "Type 1 to add an AbuseIPDB API key and save it to the current config file \"config.json\"\n"
+                    "Type 2 to provide a path to an AbuseIPDB API key and copy it to the config file \"config.json\"\n"
                     "Type 3 to add an AbuseIPDB API key without saving it (not recommended)\n"
-                    "Type 4 to exit\n"):
+                    "Type 4 to add an AbuseIPDB API key to existing config file"
+                    "Type 0 to exit\n"):
             case "1":
                 apikey = input("Type the api key into the console:\n")
                 break
@@ -227,6 +233,8 @@ def addApiKey():
                 apikeytemp = input("Type the api key into the console:\n")
                 break
             case "4":
+                print("Not implemented yet.")
+            case "0":
                 exit(1)
             case _:
                 print("\033[91mInvalid value, please choose between \"1\", \"2\", \"3\" or \"4\".\033[0m\n")
@@ -327,8 +335,11 @@ def outputDataAbuseIPDB(iparr):
     configfile[readfromdefaultorcustom]['isTor'],
     configfile[readfromdefaultorcustom]['totalReports'],
     configfile[readfromdefaultorcustom]['lastReport']]
+    arraytoreporttxt = []
     for ip in iparr:
         if ip.abuseconfidence >= confidencethresholdconfigval:
+            arraytoreporttxt.append("IP address: " + str(ip.ip) + "\n")
+            arraytoreporttxt.append("    Abuse confidence: " + str(ip.abuseconfidence) + "\n")
             print("IP address: " + ip.ip)
             print(" Abuse confidence: " + str(ip.abuseconfidence))
             for i in range(len(outputbooleanvalueslist)):
@@ -337,36 +348,52 @@ def outputDataAbuseIPDB(iparr):
                         match i:
                             case 0:
                                 print(" Is whitelisted: " + str(ip.whiteliststatus))
+                                arraytoreporttxt.append("    Is whitelisted: " + str(ip.whiteliststatus) + "\n")
                                 i += 1
                             case 1:
                                 print(" Contry code: " + str(ip.country))
+                                arraytoreporttxt.append("    Country code: " + str(ip.country) + "\n")
                                 i += 1
                             case 2:
                                 print(" Usage type: " + str(ip.usagetype))
+                                arraytoreporttxt.append("    Usage type: " + str(ip.usagetype) + "\n")
                                 i += 1
                             case 3:
-                                print(" ISP (Internet Service Provider): " + str(ip.isp))
+                                print(" ISP (Internet Service Provider): " + str(ip.isp) + "\n")
+                                arraytoreporttxt.append("    ISP: " + str(ip.isp) + "\n")
                                 i += 1
                             case 4:
                                 print(" Domain: " + str(ip.domain))
+                                arraytoreporttxt.append("    Domain: " + str(ip.domain) + "\n")
                                 i += 1
                             case 5:
                                 print(" Is TOR: " + str(ip.istor))
+                                arraytoreporttxt.append("    Is TOR: " + str(ip.istor) + "\n")
                                 i += 1
                             case 6:
                                 print(" Total reports: " + str(ip.totalreports))
+                                arraytoreporttxt.append("    Total reports: " + str(ip.totalreports) + "\n")
                                 i += 1
                             case 7:
                                 print(" Last report at: " + str(ip.lastreportdate))
+                                arraytoreporttxt.append("    Last report: " + str(ip.lastreportdate) + "\n")
                                 i += 1
                     case _:
                         i += 1
-            print("")
         else:
             print("Confidence threshold value of " + str(confidencethresholdconfigval) + " not met for IP: " + str(ip.ip))
-    whatReportToGenerate()
-
-    print("\033[91mEverything is done, reports have not been generated, since this feature is not implemented yet.\033[0m\n"
+    if configfile['config']['wantsReports']:
+        try:
+            os.mkdir("IPCheckerReports" + configfile['config']['reportFormat'])
+        except FileExistsError:
+            pass
+        except PermissionError:
+            print("No permissions to create reports directory, expect errors.")
+            pass
+        reportfile = open("./" + "IPCheckerReports" + configfile['config']['reportFormat'] + "/ReportFrom" + str(datetime.datetime.now().strftime("%Y%m%d%H%M%S")) + ".txt", "w")
+        addArrayToReportTXT(arraytoreporttxt, reportfile)
+        reportfile.close()
+    print("\033[96m\nEverything is done.\033[0m\n"
           "Thanks for using the program. If you encountered any problems, please report them under \"Issues\" on the GitHub page of the project. You will be redirected to the menu now.")
 
 def makeRequestAbuse(ipadd, apikeyreadablerequest):
@@ -383,23 +410,27 @@ def makeRequestAbuse(ipadd, apikeyreadablerequest):
     decodedresponse = json.loads(response.text)
     return decodedresponse
 
-def whatReportToGenerate():
+"""def whatReportToGenerate(ipstoreport):
     global configfile
-    wantsreportsconfigval = configfile['config']['wantsReports']
-    if wantsreportsconfigval:
-        reportformatconfigval = configfile['config']['reportFormat']
-        if reportformatconfigval == "csv":
-            generateReportCSV()
-        elif reportformatconfigval == "json":
-            generateReportJSON()
+    if ipstoreport:
+        wantsreportsconfigval = configfile['config']['wantsReports']
+        if wantsreportsconfigval:
+            reportformatconfigval = configfile['config']['reportFormat']
+            if reportformatconfigval == "csv":
+                generateReportCSV(ipstoreport)
+            elif reportformatconfigval == "json":
+                True
+        else:
+            print("\033[96mReports are not going to be generated since this option has not been chosen in the setup.\033[0m")
     else:
-        print("\033[96mReports are not going to be generated since this option has not been chosen in the setup.\033[0m")
-
+        print("List of processed IP addresses does not contain any values. Report is not going to be generated regardless of the config value.")
+"""
 def generateReportCSV():
-    print("Coming soon")
+    print("Coming soon...")
 
-def generateReportJSON():
-    print("Coming soon")
+def addArrayToReportTXT(param, reportfile):
+    for val in param:
+        reportfile.write(val)
 
 if __name__ == '__main__':
     menu()
