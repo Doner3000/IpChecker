@@ -283,6 +283,7 @@ def makeNewConfigFile(**kwargs):
         }
     }
     with open("./config.json", "w") as jsonconfigfilewrite:
+        # noinspection PyTypeChecker
         json.dump(configfiledicttosave, jsonconfigfilewrite)
 
 def processCSV():
@@ -290,10 +291,13 @@ def processCSV():
     csvarr = []
     with open(csvpath, newline="") as csvfile:
         ipreader = csv.reader(csvfile, delimiter=",")
-        ipreader.__next__()
         for row in ipreader:
-            csvarr.append(row[0])
-            csvarr.append(row[1])
+            for value in row:
+                if re.search("[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}", value):
+                    csvarr.append(value)
+                else:
+                    print("Value other than IP detected, skipping...")
+
     return csvarr
 
 def processIPArray(iparrinput):
@@ -306,7 +310,13 @@ def processIPsAbuseDB(iparr, apikeyreadable):
     for i in range(len(iparr)):
         ip = iparr[i]
         jsondoc = makeRequestAbuse(ip, apikeyreadable)
-        runningip = jsondoc['data']['ipAddress']
+        # noinspection PyBroadException
+        try:
+            runningip = jsondoc['data']['ipAddress']
+            print("Processing IP " + jsondoc['data']['ipAddress'])
+        except:
+            print(jsondoc['errors'][0]['detail'])
+            menu()
         runningwhitelist = jsondoc['data']['isWhitelisted']
         runningabuseconfidence = jsondoc['data']['abuseConfidenceScore']
         runningcountry = jsondoc['data']['countryCode']
